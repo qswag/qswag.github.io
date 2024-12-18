@@ -75,16 +75,43 @@ function filltabl(){
     newrow.appendChild(rowttp);
     document.getElementById("outtable").appendChild(newrow);
 }
-function lookfor(which){
+function filltabl(htmlstring){
+    htmltext=new DOMParser().parseFromString(htmlstring, 'text/html');
+    // var time=0;
+    // while(document.getElementById('firstHeading')==null){
+        // setInterval(function(){time++});
+    // }
+    // console.log("loaded after "+time+"ms");
+    var newrow=document.createElement("tr");
+    var rowurl=document.createElement("td");
+    rowurl.innerHTML=htmltext.getElementById('firstHeading').children[0].innerHTML;
+    newrow.appendChild(rowurl);
+    var rowmat=document.createElement("td");
+    rowmat.innerHTML=lookfor("mat",htmltext);
+    newrow.appendChild(rowmat);
+    document.getElementById("outtable").appendChild(newrow);
+    var rowobt=document.createElement("td");
+    rowobt.innerHTML=lookfor("obt",htmltext);
+    newrow.appendChild(rowobt);
+    var rowttp=document.createElement("td");
+    rowttp.innerHTML=lookfor("ttp",htmltext);
+    newrow.appendChild(rowttp);
+    document.getElementById("outtable").appendChild(newrow);
+}
+
+function lookfor(which,doc){
+    if(doc==null){
+        doc=document;
+    }
     if(which=="mat"){
-        return document.getElementById("Used_in")!=null;
+        return doc.getElementById("Used_in")!=null;
     }
     if(which=="obt"){
         //search if the item is crafted, bought, fished, dropped, found in chest
         var methods=[];
-        if(document.getElementById("Recipe")!=null)
+        if(doc.getElementById("Recipe")!=null)
             methods.push("Crafting");
-        var theads=document.getElementsByTagName("th");    
+        var theads=doc.getElementsByTagName("th");    
         for(i=0;i<theads.length;i++){
             if(theads[i].innerHTML=="Dropped by"){
                 if(methods.includes("Drop")===false){
@@ -95,8 +122,32 @@ function lookfor(which){
         return methods;
     }
     if(which=="ttp"){
-        return document.getElementsByClassName("stat")[0].rows[6].cells[1].innerHTML;
+        return doc.getElementsByClassName("stat")[0].rows[6].cells[1].innerHTML;
     }
+}
+
+async function gethtml(){
+    const list=document.getElementById('urlinput').value.split(" ");
+    for(var i=0;i<list.length;i++){
+        console.log(i);
+        const url=list[i];
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const page = await response.text();
+            //console.log(page);
+            filltabl(page);
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+        
+    // const html = await fetch(url); // html as text
+    // const doc = new DOMParser().parseFromString(html, 'text/html');
+    
+    //doc.title; doc.body;
 }
 window.onload = function(){
     document.getElementById("controls").children[1].setAttribute("style","color:green");
